@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 read -rp "Enter your Linux username for auto-login and fingerprint setup: " USER_NAME
 

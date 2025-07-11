@@ -5,6 +5,9 @@ read -rp "Enter your Linux username for auto-login and fingerprint setup: " USER
 
 SWAPFILE="/swapfile"
 
+#!/bin/bash
+
+# Safe execution function with error handling
 function safe_run {
     "$@" || { echo -e "\n[ERROR] Command failed: $*" >&2; exit 1; }
 }
@@ -13,9 +16,11 @@ echo "[INFO] Updating system..."
 safe_run sudo apt update
 safe_run sudo apt upgrade -y
 
-echo "[INFO] Installing KDE Plasma minimal and essential KDE utilities..."
+echo "[INFO] Enabling 'universe' repository if not already enabled..."
 safe_run sudo add-apt-repository universe -y
 safe_run sudo apt update
+
+echo "[INFO] Installing KDE Plasma (minimal) and essential KDE applications..."
 safe_run sudo apt install -y --no-install-recommends \
   kde-plasma-desktop sddm dolphin konsole kate vlc \
   kdeconnect plasma-discover plasma-nm plasma-pa powerdevil \
@@ -23,11 +28,27 @@ safe_run sudo apt install -y --no-install-recommends \
   kde-config-plymouth kscreen bluedevil \
   kio-extras kamoso dolphin-plugins ark filelight
 
+# Check if SDDM is correctly installed before proceeding
+if ! command -v sddm &> /dev/null; then
+    echo "[ERROR] SDDM not found! Installation failed or package missing."
+    echo "[INFO] Reverting to GDM3 as fallback..."
+    echo "/usr/sbin/gdm3" | sudo tee /etc/X11/default-display-manager > /dev/null
+    safe_run sudo apt install -y gdm3
+    safe_run sudo systemctl enable gdm3 --now
+    exit 1
+fi
+
 echo "[INFO] Setting SDDM as default display manager..."
 echo "/usr/sbin/sddm" | sudo tee /etc/X11/default-display-manager > /dev/null
 safe_run sudo dpkg-reconfigure -fnoninteractive sddm
+
+echo "[INFO] Disabling GDM3 (if installed)..."
 safe_run sudo systemctl disable gdm3 --now || true
+
+echo "[INFO] Enabling and starting SDDM..."
 safe_run sudo systemctl enable sddm --now
+
+echo "[SUCCESS] KDE Plasma and SDDM have been installed and configured."
 
 echo "[INFO] Removing GNOME Desktop and bloatware..."
 safe_run sudo apt purge -y ubuntu-desktop gnome-shell gdm3 gnome-session gnome-terminal nautilus gedit \

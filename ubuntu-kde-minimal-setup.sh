@@ -13,10 +13,15 @@ echo "[INFO] Updating system..."
 safe_run sudo apt update
 safe_run sudo apt upgrade -y
 
-echo "[INFO] Installing KDE Plasma minimal, SDDM, and VLC..."
+echo "[INFO] Installing KDE Plasma minimal and essential KDE utilities..."
 safe_run sudo add-apt-repository universe -y
 safe_run sudo apt update
-safe_run sudo apt install -y --no-install-recommends kde-plasma-desktop sddm dolphin konsole kate vlc
+safe_run sudo apt install -y --no-install-recommends \
+  kde-plasma-desktop sddm dolphin konsole kate vlc \
+  kdeconnect plasma-discover plasma-nm plasma-pa powerdevil \
+  kde-spectacle kde-config-screenlocker kde-config-gtk-style \
+  kde-config-plymouth kscreen bluedevil \
+  kio-extras kamoso dolphin-plugins ark filelight
 
 echo "[INFO] Setting SDDM as default display manager..."
 echo "/usr/sbin/sddm" | sudo tee /etc/X11/default-display-manager > /dev/null

@@ -49,12 +49,22 @@ echo "[INFO] Enabling and starting SDDM..."
 safe_run sudo systemctl enable sddm --now
 
 echo "[SUCCESS] KDE Plasma and SDDM have been installed and configured."
+echo "[INFO] Removing GNOME apps and bloatware (keeping core dependencies intact)..."
 
-echo "[INFO] Removing GNOME Desktop and bloatware..."
-safe_run sudo apt purge -y ubuntu-desktop gnome-shell gdm3 gnome-session gnome-terminal nautilus gedit \
-    evince yelp gnome-control-center gnome-software gnome-calendar cheese gnome-screenshot \
-    rhythmbox totem eog transmission-gtk libreoffice* thunderbird snapd
+# Apps and utilities that can be safely removed
+safe_run sudo apt purge -y \
+    nautilus gedit evince yelp cheese gnome-screenshot rhythmbox totem \
+    eog transmission-gtk libreoffice* thunderbird snapd gnome-calendar
+
+echo "[INFO] Attempting to purge GNOME shell and GDM3 (only if SDDM and Plasma are working)..."
+
+# These will be removed *only* if KDE/SDDM confirmed working after reboot
+safe_run sudo apt purge -y gdm3 gnome-shell gnome-session ubuntu-desktop gnome-control-center gnome-software
+
+echo "[INFO] Removing orphaned dependencies..."
 safe_run sudo apt autoremove -y --purge
+
+echo "[SUCCESS] GNOME apps and bloatware removed. Reboot recommended."
 
 echo "[INFO] Creating 8GB swapfile for hibernation..."
 safe_run sudo fallocate -l 8G "$SWAPFILE"
